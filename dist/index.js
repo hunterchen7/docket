@@ -1,3 +1,4 @@
+var _a, _b, _c;
 import { Marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { markedHighlight } from 'marked-highlight';
@@ -20,6 +21,10 @@ hljs.registerLanguage('python', python);
 hljs.registerLanguage('plaintext', plaintext);
 hljs.registerLanguage('rust', rust);
 hljs.registerLanguage('typescript', typescript);
+const uiTheme = (_a = localStorage.getItem("ui-theme")) !== null && _a !== void 0 ? _a : "light";
+document.body.classList.add(uiTheme);
+(_b = document.getElementById("navBar")) === null || _b === void 0 ? void 0 : _b.classList.add(uiTheme + "-navbar");
+(_c = document.getElementById("mdEditor")) === null || _c === void 0 ? void 0 : _c.classList.add(uiTheme);
 // Marked object
 const marked = new Marked({
     gfm: true
