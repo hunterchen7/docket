@@ -319,7 +319,7 @@ const updateCodeStyle = () => {
     if (codeStyle === "github") {
         (<HTMLElement>document.querySelector(":root")).style.setProperty("--default-code-background", "#f6f8fa");
     } else {
-        setTimeout(() => {(<HTMLElement>document.querySelector(":root")).style.setProperty("--default-code-background", testCodeBackground());}, 50)
+        setTimeout(() => {(<HTMLElement>document.querySelector(":root")).style.setProperty("--default-code-background", testCodeBackground());}, 100);
     }
     
 }
