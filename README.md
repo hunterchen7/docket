@@ -3,13 +3,19 @@ locally saved markdown notes in a new tab or popup 📝
 
 ### Screenshots
 
-Dark Mode!|Code block themes :D
-:-:|:-:
-![dark mode](https://github.com/LordExodius/docket/assets/26910397/99bb6a71-9bff-48c2-9f01-cc3e1d92ab04)|![code sample](https://github.com/LordExodius/docket/assets/26910397/df5081a0-25a7-4244-9644-99af3a740256)
-
-
+🌆 dark mode|🧑‍💻 code block themes|🆙 popup notes
+:-:|:-:|:-:
+![dark mode](https://github.com/LordExodius/docket/assets/26910397/02ab6e49-bba1-4865-b5ed-4724126205cc)|![code sample](https://github.com/LordExodius/docket/assets/26910397/fabc4746-8442-4178-885b-7993fd77f76b)|![popup](https://github.com/LordExodius/docket/assets/26910397/49eb5f93-116d-444f-a9b5-66401d8cf708)
 
 ### Installation
+
+> [!WARNING]
+> Uninstalling and reinstalling the extension will erase all saved notes - please back them up before attempting to switch between the chrome store and dev extensions!
+
+Available on the chrome web store [here](http://awwscar.ca/docket/). 
+
+**Note:** The chrome web store version will likely be a few versions behind. If you're looking to keep up to date with the latest version of docket, I recommend cloning this repo and simply using it as an extension in dev mode :D
+
 1. Clone or download this repo and unzip (if you downloaded a zip file).
 2. Go to `chrome://extensions/` or wherever you manage extensions.
 3. Enable developer mode and click `load unpacked`.
@@ -31,7 +37,7 @@ Done!
 - [manifest](manifest.json) holds extension metadata
 - [icons](icons/) holds extension icon
 - [src](src/) holds typescript source code
-- [dist](dist/) holds all html, css, compiled js, and bundled modules (using [rollup.js](https://rollupjs.org/))
+- [dist](dist/) holds all html, css, compiled js, and bundled modules (using [rspack](https://www.rspack.dev/))
 
 ## Todo
 There's a lot of improvements and features I'd like to add, and feature requests are always welcome. 

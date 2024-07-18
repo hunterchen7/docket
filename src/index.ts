@@ -50,7 +50,7 @@ interface UserNote {
 }
 
 let savedNotes: UserNote[] = [];
-let currentUUID: string;;
+let currentUUID: string;
 
 /** 
  * Summary: Get editor text from HTML element
@@ -59,6 +59,9 @@ const getEditorText = () => {
     return (<HTMLInputElement>document.getElementById("mdEditor")).value || ""
 }
 
+/** 
+ * Summary: Get note title from HTML element
+ **/
 const getNoteTitle = () => {
     return (<HTMLElement>document.getElementById("fileName")).innerHTML || "unnamed"
 }
@@ -81,6 +84,10 @@ const getActiveNote = (): UserNote => {
  * Summary: Rerender markdown
  */
 const renderMarkdown = () => {
+    // Prevent rendering when editor is minimized
+    const mdRender = <HTMLElement>document.getElementById("mdRender")
+    if (mdRender.style.display === "none") { return }
+    
     const editorText = getEditorText();
 
     // Parse markdown and sanitize HTML output
@@ -102,6 +109,10 @@ const renderMarkdown = () => {
     })
 }
 
+/** 
+ * Summary: Get note from `savedNotes` by UUID
+ * @param uuid UUID of note to get
+ **/
 const getNoteByUUID = (uuid: string) => {
     // console.log("scanning notes")
     for (let i = 0; i < savedNotes.length; i++) {
@@ -111,6 +122,11 @@ const getNoteByUUID = (uuid: string) => {
     }
 }
 
+/** 
+ * Summary: Update note content in `savedNotes` by UUID
+ * @param uuid UUID of note to set
+ * @param note UserNote object to set
+ **/
 const setNoteByUUID = (uuid: string, note: UserNote) => {
     // console.log(`setting note with uuid ${uuid}`)
     for (let i = 0; i < savedNotes.length; i++) {
@@ -122,6 +138,7 @@ const setNoteByUUID = (uuid: string, note: UserNote) => {
     savedNotes.push(note);
 }
 
+//* Summary: Delete note from savedNotes by UUID */
 const deleteNoteByUUID = (uuid: string) => {
     const remaining = savedNotes.filter((note: UserNote) => {
         if (note.uuid == uuid) {
@@ -139,6 +156,10 @@ const deleteNoteByUUID = (uuid: string) => {
     }
 }
 
+/**
+ * Summary: Load active note from `savedNotes` by UUID
+ * @param uuid UUID of note to load
+ */
 const savedNoteHandler = (uuid: string) => {
     const userNote = <UserNote>getNoteByUUID(uuid);
     setActiveNote(userNote);
@@ -175,7 +196,7 @@ interface LastExecuted {
     msSinceLastUpdate: number
 }
 
-// Debounce rendering to rerender after no input detected for {timeout}ms
+/** Debounce rendering to for final input detected. */
 const debounce = (lastExecuted: LastExecuted) => {
     if (Date.now() - lastExecuted.msSinceLastInput > timeout) {
         // console.log("Debounce")
@@ -188,11 +209,11 @@ const debounce = (lastExecuted: LastExecuted) => {
 
 /**
  * Input handler for updates to the markdown editor/title
- * @param lastExecuted 
+ * @param lastExecuted LastExecuted object containing timestamps of last input and last update
  */
 const handleInput = (lastExecuted: LastExecuted) => {
     let currTime = Date.now()
-    // debounce
+    // debounce final input
     lastExecuted.msSinceLastInput = currTime
     setTimeout(debounce, timeout, lastExecuted)
 
@@ -207,7 +228,9 @@ const handleInput = (lastExecuted: LastExecuted) => {
 }
 
 /**
- * Upsert savedNotes variable to local storage
+ * Upsert `savedNotes` to local storage. 
+ * 
+ * Note: this is a full overwrite of local storage `savedNotes`
  */
 const upsertSavedNotes = () => {
     chrome.storage.local.set({savedNotes: savedNotes}, () => {
@@ -216,7 +239,7 @@ const upsertSavedNotes = () => {
 }
 
 /**
- * Upsert currently active note to savedNotes and localStorage
+ * Upsert currently active note to `savedNotes` and `localStorage`
  */
 const upsertActiveNote = () => {
     setNoteByUUID(currentUUID, getActiveNote())
@@ -259,6 +282,10 @@ const newNote = () => {
 
 // AUTOLOADING
 
+/**
+ * Set active note to a `UserNote` object.
+ * @param userNote UserNote object to set as active note
+ */
 const setActiveNote = (userNote: UserNote) => {
     currentUUID = userNote.uuid;
     (<HTMLElement>document.getElementById("fileName")).innerHTML = userNote.noteTitle;
@@ -268,26 +295,37 @@ const setActiveNote = (userNote: UserNote) => {
     renderMarkdown();
 }
 
+/**
+ * Calls `deleteNoteByUUID` on `currentUUID` if user confirms deletion.
+ */
 const deleteActiveNote = () => {
-    deleteNoteByUUID(currentUUID)
+    if(confirm("Are you sure you want to delete this note?")) {
+        deleteNoteByUUID(currentUUID)
+    }
 }
 
+/**
+ * Set theme for all elements with `data-theme` attribute.
+ * @param theme name of theme to set
+ */
 const setTheme = (theme: string) => {
+    const darkModeSlider = <HTMLInputElement>document.getElementById("darkModeSlider")
+    darkModeSlider.checked = darkMode
     const themedElements = document.querySelectorAll("[data-theme]")
     themedElements.forEach((element) => {
         element.setAttribute("data-theme", theme)
     })
-    const themeIcon = <HTMLImageElement>document.getElementById("themeIcon")
-    // icon is inverted from theme because it represents the theme that will be switched to
-    themeIcon.src = theme === 'dark' ? "../icons/lightmode.svg" : "../icons/darkmode.svg"
-    themeIcon.className = theme === 'dark' ? "light-icon" : "dark-icon"
 }
 
+/**
+ * Toggle dark mode on or off depending on the state of the `darkModeSlider` checkbox.
+ */
 const toggleDarkMode = () => {
-    const themeIcon = <HTMLImageElement>document.getElementById("themeIcon");
-    darkMode = themeIcon.className === 'dark-icon'; // icky global variable
+    const darkModeSlider = <HTMLInputElement>document.getElementById("darkModeSlider")
+    darkMode = darkModeSlider.checked
     chrome.storage.sync.set({darkMode: darkMode})
-    setTheme(darkMode ? "dark" : "light")
+    uiTheme = darkMode ? "dark" : "light"
+    setTheme(uiTheme)
 }
 
 const testCodeBackground = (): string => {
@@ -299,7 +337,14 @@ const testCodeBackground = (): string => {
     return background
 }
 
+/**
+ * This function matches the default code block background color to the current theme.
+ * 
+ * If you are having issues with this not working on older systems, try increasing `updateTimeout`.
+ */
 const updateCodeStyle = () => {
+    const updateTimeout = 50;
+
     // clear old stylesheet if exists
     const oldStyleSheet = document.getElementById("codeStylesheet")
     if (oldStyleSheet) {
@@ -308,7 +353,6 @@ const updateCodeStyle = () => {
     
     codeStyle = (<HTMLSelectElement>document.getElementById("codeStyleDropdown")).value
     chrome.storage.local.set({codeStyle: codeStyle})
-    // console.log(`Setting code style to: ${codeStyle}`)
     const codeStylesheetElement = document.createElement("link");
     codeStylesheetElement.rel = "stylesheet";
     codeStylesheetElement.href = `code_themes/${codeStyle}.css`;
@@ -316,18 +360,43 @@ const updateCodeStyle = () => {
     document.head.appendChild(codeStylesheetElement)
     
     // Set background color for code blocks
-    if (codeStyle === "github") {
-        (<HTMLElement>document.querySelector(":root")).style.setProperty("--default-code-background", "#f6f8fa");
+    if (codeStyle === "github") { // Default code background for github theme, since the theme doesn't have a background color
+        (<HTMLElement>document.querySelector(":root")).style.setProperty("--default-code-background", "#eff1f3");
     } else {
-        setTimeout(() => {(<HTMLElement>document.querySelector(":root")).style.setProperty("--default-code-background", testCodeBackground());}, 100);
+        setTimeout(() => {(<HTMLElement>document.querySelector(":root")).style.setProperty("--default-code-background", testCodeBackground());}, updateTimeout)
     }
-    
 }
 
+/**
+ * Set display of markdown renderer
+ * @param display CSS display property
+ */
+const setMdRenderDisplay = (display: string) => {
+    (<HTMLElement>document.getElementById("mdRender")).style.display = display
+}
+
+/**
+ * Toggle markdown renderer display based on editor width or value of `mdRenderToggle` checkbox.
+ */
+const toggleMdRender = () => {
+    const editorWidth = (<HTMLElement>document.getElementById("mdEditor")).offsetWidth
+    const mdRenderSlider = <HTMLInputElement>document.getElementById("mdRenderSlider")
+    if (editorWidth < 300 || !mdRenderSlider.checked) {
+        setMdRenderDisplay("none")
+    } else {
+        setMdRenderDisplay("block")
+    }
+}
+
+/**
+ * Summary: Run all initialization functions
+ */
 const runPreload = () => {
     // Sync settings from cloud
-    chrome.storage.sync.get('darkMode', (result) => {
-        setTheme(result.darkMode ? "dark" : "light");
+    chrome.storage.sync.get(null, (result) => {
+        const darkModeSlider = <HTMLInputElement>document.getElementById("darkModeSlider")
+        darkModeSlider.checked = result.darkMode
+        toggleDarkMode()
     });
 
     // Sync notes from local storage
@@ -344,15 +413,20 @@ const runPreload = () => {
     })
 }
 
-window.onload = runPreload;
+window.addEventListener("load", runPreload)
+
+window.addEventListener("resize", toggleMdRender)
 
 // CODESTYLE EVENT LISTENER
 const codeStyleDropdown = <HTMLSelectElement>document.getElementById("codeStyleDropdown")
 codeStyleDropdown.addEventListener("change", updateCodeStyle)
 
 // DARKMODE EVENT LISTENER
-const darkModeToggle = <HTMLImageElement>document.getElementById("themeIcon")
-darkModeToggle.addEventListener("click", toggleDarkMode)
+const darkModeSlider = <HTMLInputElement>document.getElementById("darkModeSlider")
+darkModeSlider.addEventListener("change", toggleDarkMode)
+
+const mdRenderSlider = <HTMLInputElement>document.getElementById("mdRenderSlider")
+mdRenderSlider.addEventListener("change", toggleMdRender)
 
 // DELETE NOTE EVENT LISTENER
 const deleteNoteButton = <HTMLButtonElement>document.getElementById("deleteNoteButton")
@@ -365,6 +439,20 @@ newNoteButton.addEventListener("click", newNote)
 // EDITOR EVENT LISTENERS
 const mdEditor = <HTMLInputElement>document.getElementById("mdEditor")
 const mdTitle = <HTMLElement>document.getElementById("fileName")
+
+/**
+ * Resync notes when tab is hidden and made visible
+ */
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        runPreload();
+    }
+})
+
+/** 
+ * Resync notes when window is focused
+ */ 
+window.addEventListener("focus", runPreload)
 
 mdEditor.addEventListener("input", 
     handleInput.bind(undefined, {

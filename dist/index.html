@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="../icons/docket.png">
-    <title>docket</title>
+    <title>Docket</title>
 </head>
 <body data-theme="dark">
     <div id="docketBody">
@@ -15,11 +15,11 @@
                     <h3 id="fileName" contenteditable="true"></h3> 
                 </header>
                 <div id="noteOptions">
-                    <button id="newNoteButton">📝</button>
-                    <button id="deleteNoteButton">🗑️</button>
+                    <button id="newNoteButton" data-theme="light">📝</button>
+                    <button id="deleteNoteButton" data-theme="light">🗑️</button>
                 </div>
+                <div id="savedNotes"></div>
             </div>
-            <div id="savedNotes"></div>
             <div id="navFooter">
                 <label>Code Style:
                     <select id="codeStyleDropdown" data-theme="dark">
@@ -28,8 +28,19 @@
                         <option value="github-dark-dimmed">github-dark-dimmed</option>
                     </select>
                 </label><br>
-                <div>
-                    <img src="../icons/lightmode.svg" id="themeIcon" class="light-icon">
+                <div id="darkModeSetting" class="settingToggle">
+                    <span>Dark Mode</span>
+                    <label class="switch">
+                        <input id="darkModeSlider" type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="mdRenderSetting" class="settingToggle">
+                    <span>MD Preview</span> 
+                    <label class="switch">
+                        <input id="mdRenderSlider" type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
                 </div>
             </div>
         </div>
